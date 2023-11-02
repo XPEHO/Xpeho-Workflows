@@ -1,0 +1,39 @@
+on:
+  workflow_call
+  
+name: 🏷️ Add labels when pull request is opened
+
+jobs:
+  add-label:
+    name: 🏷️ Add labels on pull request
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    steps:
+      - run: |
+          if [[ "${{ github.head_ref }}" == chore/* ]]; then
+            echo "👷 Chore label"
+            LABEL="chore :construction_worker_man:"
+          else
+            if [[ "${{ github.head_ref }}" ==  feature/* ]]; then
+              echo "🚀 Feature label"
+              LABEL="enhancement :rocket:"
+            else
+              if [[ "${{ github.head_ref }}" ==  feat/* ]]; then
+                echo "🚀 Feature label"
+                LABEL="enhancement :rocket:"
+              else
+                if [[ "${{ github.head_ref }}" == fix/* ]]; then
+                  echo "🐛 Fix label"
+                  LABEL="bug :bug:"
+                else
+                  echo "🏷️ Other label"
+                  LABEL="other"
+                fi
+              fi
+            fi
+          fi
+          gh pr edit $ISSUE --add-label "$LABEL"
+          gh pr comment $ISSUE --body "🏷️ Label $LABEL has been added to this pull request"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.pull_request.html_url }}

@@ -1,0 +1,27 @@
+on:
+  workflow_call:
+    inputs:
+      FLUTTER_VERSION:
+        description: 'Flutter version'
+        required: true
+        default: '3.13.6'
+  
+name: Flutter Test
+
+jobs:
+  build:
+    name: 🛠️ Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ inputs.FLUTTER_VERSION }}
+        channel: 'stable'
+
+    - name: 🦋 Flutter pub get, format, analyze, and test
+      run: |
+        flutter pub get
+        dart format --set-exit-if-changed .
+        flutter analyze
+        flutter test

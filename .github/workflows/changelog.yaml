@@ -1,0 +1,23 @@
+on:
+  workflow_call
+  
+name: 🛂 Control changelog update
+
+jobs:
+  build:
+    name: 🛂 Check changelog update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check changelog has been update
+        id: changelogcheck
+        if: github.base_ref == 'main'
+        run: |
+          echo "Checking changelog has been updated"
+          git fetch
+          if [ -z "$(git diff --name-only origin/main | grep CHANGELOG.md)" ]; then
+            echo "❌ [FAIL] - Changelog has not been updated"
+            exit 1
+          else
+            echo "✅ [SUCCESS] - Changelog has been updated"
+          fi
