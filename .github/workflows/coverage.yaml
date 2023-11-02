@@ -3,11 +3,13 @@ on:
     inputs:
       MIN_COVERAGE:
         description: 'Minimum coverage percentage'
+        type: number
         required: true
-        default: '80'
+        default: 80
       FLUTTER_VERSION:
         description: 'Flutter version'
         required: true
+        type: string
         default: '3.13.6'
   
 name: Coverage Report

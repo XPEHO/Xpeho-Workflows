@@ -4,7 +4,8 @@ on:
       FLUTTER_VERSION:
         description: 'Flutter version'
         required: true
-        default: '3.13.6'
+        type: string
+        default: '3.13.6'  
   
 name: Flutter Test
 
