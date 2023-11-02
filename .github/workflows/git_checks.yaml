@@ -1,0 +1,90 @@
+on:
+  workflow_call
+
+name: 🐙 Git checks
+
+jobs:
+  check-branch-name:
+    name: 🔍 Check branch name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check branch name respects naming conventions
+        id: branchnamecheck
+        if: github.base_ref == 'main'
+        run: |
+          echo "🔍 Checking branch name..."
+          ALLOWED_PREFIXES="feature feat fix hotfix release chore dependabot docs test refactor style"
+          BRANCH_NAME_VALID=false
+          PREFIXES_ARRAY=$(echo $ALLOWED_PREFIXES | tr " " "\n")
+          for PREFIX in $PREFIXES_ARRAY ; 
+          do 
+          if [[ "${{ github.head_ref }}" == $PREFIX/* ]]; then
+              echo "✅ ${{ github.head_ref }} respects prefix $PREFIX"
+              BRANCH_NAME_VALID=true
+          else
+              echo "❌ ${{ github.head_ref }} DOES NOT respects prefix $PREFIX"
+          fi
+          done
+          if [[ $BRANCH_NAME_VALID == true ]]; then
+              echo "✅ [SUCCESS] - Your branch name respect the naming convention"  
+          else
+              echo "❌ [FAIL] - Branch ${{ github.head_ref }} does not respect the naming convention, please rename"  
+              exit 1
+          fi
+  check-commit-name:
+    name: 🔍 Check commit(s)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check commit name
+        id: checkcommitname
+        if: github.base_ref == 'main'
+        run: |
+          echo "🔍 Check commit name respects naming conventions.."
+          count=$(git rev-list --count origin/${{ github.base_ref }}..origin/${{ github.head_ref }})
+          ALLOWED_PREFIXES="feat fix docs style refactor test chore"
+          PREFIXES_ARRAY=$(echo $ALLOWED_PREFIXES | tr " " "\n")
+          ALL_COMMIT_NAME_VALID=true
+          if [ $count == 0 ]; then
+            ALL_COMMIT_NAME_VALID=false
+          else
+            echo "🔍 Checking last commit"
+            message=$(git log -1 --format=%s origin/${{ github.head_ref }})
+            COMMIT_NAME_VALID=false
+            for PREFIX in $PREFIXES_ARRAY ; 
+            do 
+            if [[ "$message" == $PREFIX\(*\):\ * ]]; then
+                COMMIT_NAME_VALID=true
+                echo "✅ $message respects prefix $PREFIX"
+            else
+                echo "❌ $message DOES NOT respects prefix $PREFIX"
+            fi
+            done
+            if [[ $COMMIT_NAME_VALID == false ]]; then
+                ALL_COMMIT_NAME_VALID=false
+            fi
+          fi
+          if [[ $ALL_COMMIT_NAME_VALID == true ]]; then
+              echo "✅ [SUCCESS] - All your commit(s) respect the naming convention"  
+          else
+              echo "❌ [FAIL] - At least one commit message does not respect the naming convention, please rename"  
+              exit 1
+          fi
+  up-to-date:
+    name: 🔍 Check branch up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check up to date
+        id: checkuptodate
+        if: github.base_ref == 'main'
+        run: |
+          echo "🔍 Check branch is up to date.."
+          count=$(git rev-list --count origin/${{ github.head_ref }}..origin/${{ github.base_ref }})
+          if [ $count == 0 ]; then
+            echo "✅ [SUCCESS] - Your branch is up to date"  
+          else
+            echo "❌ [FAIL] - your branch is $count commits late. Please rebase."  
+            exit 1
+          fi

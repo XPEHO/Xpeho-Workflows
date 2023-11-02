@@ -1,0 +1,34 @@
+on:
+  workflow_call:
+    inputs:
+      MIN_COVERAGE:
+        description: 'Minimum coverage percentage'
+        required: true
+        default: '80'
+      FLUTTER_VERSION:
+        description: 'Flutter version'
+        required: true
+        default: '3.13.6'
+  
+name: Coverage Report
+
+jobs:
+  build:
+    name: 🧑‍🔬 Coverage Report
+    runs-on: ubuntu-latest
+            
+    steps:
+    - name: 🦋 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ inputs.FLUTTER_VERSION }}
+        channel: 'stable'
+
+    - name: 🔍 Check the coverage of the project
+      uses: actions/checkout@v3    
+    - run: |
+        flutter pub get
+        dart pub global activate very_good_cli
+        very_good test --coverage \
+          --exclude-coverage "{**/*.g.dart,**/*.freezed.dart,**/entities/**,**/*_state.dart,**/core/**,**/providers.dart}" \
+          --min-coverage ${{ inputs.MIN_COVERAGE }}
