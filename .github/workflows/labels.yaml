@@ -33,7 +33,7 @@ jobs:
             fi
           fi
           gh pr edit $ISSUE --add-label "$LABEL"
-          gh pr comment $ISSUE --body "🏷️ Label $LABEL has been added to this pull request"
+
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ github.event.pull_request.html_url }}

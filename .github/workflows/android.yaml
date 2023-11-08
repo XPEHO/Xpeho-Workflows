@@ -1,0 +1,38 @@
+on:
+    workflow_call:
+        inputs:
+            JAVA_VERSION:
+                description: 'Java version'
+                required: true
+                type: string
+                default: '11'
+        secrets:
+            GOOGLE_SERVICE:
+                required: true
+
+name: 🤖 Android CI
+
+jobs:
+    build:
+  
+      runs-on: ubuntu-latest
+  
+      steps:
+        - uses: actions/checkout@v3
+        - name: ☕ Set up JDK
+          uses: actions/setup-java@v3
+          with:
+            java-version: ${{ inputs.JAVA_VERSION }}
+            distribution: 'temurin'
+            cache: gradle
+  
+        - name: 📄 Create firebase config file
+          run: |
+            echo ${{ secrets.GOOGLE_SERVICE }} | base64 -d > app/google-services.json
+  
+        - name: Grant execute permission for gradlew
+          run: chmod +x gradlew
+
+        - name: Build with Gradle
+          run: ./gradlew build
+  
