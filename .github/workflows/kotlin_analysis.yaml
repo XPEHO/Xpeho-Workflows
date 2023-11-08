@@ -1,0 +1,56 @@
+on:
+    workflow_call:
+        inputs:
+            JAVA_VERSION:
+                description: 'Java version'
+                required: true
+                default: '11'
+                type: string
+            DETEKT_RUN_FOLDER:
+                description: 'Detekt run folder'
+                required: false
+                default: 'app/src/main/java'
+                type: string    
+            DETEKT_FOLDER:
+                description: 'Detekt folder'
+                required: false
+                default: 'app/src/main/java'
+                type: string
+
+
+name: 🆔 Kotlin Detekt
+
+jobs:
+    detekt:
+      name: Run Detekt
+      runs-on: ubuntu-latest
+  
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+  
+        - name: ☕ Set up JDK
+          uses: actions/setup-java@v3
+          with:
+            java-version: ${{ inputs.JAVA_VERSION }}
+            distribution: 'temurin'
+  
+        - name: Install Detekt and Run it
+          run: |
+            curl -sSLO https://github.com/detekt/detekt/releases/download/v1.23.3/detekt-cli-1.23.3-all.jar
+            mv detekt-cli-1.23.3-all.jar detekt.jar
+            chmod +x detekt.jar
+            java -jar detekt.jar --input ${{ inputs.DETEKT_RUN_FOLDER}} --config ${{ inputs.DETEKT_FOLDER }}/detekt.yaml --report html:${{ inputs.DETEKT_FOLDER }}/detekt-report.html
+          shell: bash
+
+        - name: Upload Detekt Report
+          run: |
+            git fetch --all
+            git config --global user.email "noreply@xpeho.com"
+            git config --global user.name "Xpeho"
+            git checkout chore/detekt_report
+            mkdir -p ${{ inputs.DETEKT_FOLDER }}/docs
+            mv ${{ inputs.DETEKT_FOLDER }}/detekt-report.html ${{ inputs.DETEKT_FOLDER }}/docs/index.html
+            git add .
+            git commit --amend -m "chore(detekt): Detekt report"
+            git push -f origin chore/detekt_report
