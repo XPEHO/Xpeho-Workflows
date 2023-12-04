@@ -9,6 +9,8 @@ on:
         secrets:
             GOOGLE_SERVICE:
                 required: true
+            UAT_CONFIG_FILE:
+                required: false
 
 name: 🤖 Android CI
 
@@ -29,10 +31,14 @@ jobs:
         - name: 📄 Create firebase config file
           run: |
             echo ${{ secrets.GOOGLE_SERVICE }} | base64 -d > app/google-services.json
+            if [ -n "${{ secrets.UAT_CONFIG_FILE }}" ]; then
+              mkdir -p app/config
+              echo ${{ secrets.UAT_CONFIG_FILE }} | base64 -d > app/config/uat.properties
+            fi
   
         - name: Grant execute permission for gradlew
           run: chmod +x gradlew
 
         - name: Build with Gradle
-          run: ./gradlew assembleDebug --debug
+          run: ./gradlew assembleDebug
   
