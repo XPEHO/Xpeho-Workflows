@@ -50,7 +50,7 @@ jobs:
             git config --global user.name "Xpeho"
             git checkout chore/detekt_report
             mkdir -p ${{ inputs.DETEKT_FOLDER }}/docs
-            mv ${{ inputs.DETEKT_FOLDER }}/detekt-report.html ${{ inputs.DETEKT_FOLDER }}/docs/index.html
+            mv ${{ inputs.DETEKT_FOLDER }}/detekt-report.html docs/index.html
             git add .
             git commit --amend -m "chore(detekt): Detekt report"
             git push -f origin chore/detekt_report
